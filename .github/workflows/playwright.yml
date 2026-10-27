@@ -31,6 +31,7 @@ jobs:
           echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> .env.test
           echo "NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}" >> .env.test
           echo "NODE_ENV=test" >> .env.test
+          cp .env.test .env.local
 
       - name: Verify environment setup
         run: |
