@@ -10,72 +10,11 @@ interface BlogsPageProps {
   searchParams: Promise<{ search?: string }>;
 }
 
-async function BlogsList({ search }: { search?: string }) {
-  const blogs = await getAllBlogs(search);
-
-  if (blogs.length === 0) {
-    return (
-      <div
-        data-testid="blogs-list"
-        className="p-8 text-center bg-white rounded-xl border border-slate-200 text-slate-500"
-      >
-        {search
-          ? `No blogs found matching "${search}".`
-          : "No blogs added yet. Be the first to share one!"}
-      </div>
-    );
-  }
-
-  return (
-    <div data-testid="blogs-list" className="space-y-4">
-      {blogs.map((blog) => (
-        <div
-          key={blog.id}
-          data-testid="blog-item"
-          className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-        >
-          <div className="space-y-1">
-            <Link
-              href={`/blogs/${blog.id}`}
-              data-testid="blog-title"
-              className="text-lg font-bold text-blue-600 hover:text-blue-800 hover:underline block"
-            >
-              {blog.title}
-            </Link>
-            <p className="text-sm text-slate-600">
-              by <span data-testid="blog-author" className="font-medium text-slate-800">{blog.author}</span>
-            </p>
-            {blog.user && (
-              <p className="text-xs text-slate-400">
-                Added by {blog.user.name} (@{blog.user.username})
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span
-              data-testid="likes-count"
-              className="text-sm font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full"
-            >
-              {blog.likes} likes
-            </span>
-            <Link
-              href={`/blogs/${blog.id}`}
-              className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
-            >
-              View details &rarr;
-            </Link>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default async function BlogsPage({ searchParams }: BlogsPageProps) {
   const params = await searchParams;
   const search = params?.search;
   const session = await auth();
+  const blogs = await getAllBlogs(search);
 
   return (
     <div className="space-y-6">
@@ -97,20 +36,67 @@ export default async function BlogsPage({ searchParams }: BlogsPageProps) {
       </div>
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <Suspense fallback={<div>Loading filter...</div>}>
+        <Suspense fallback={<div className="text-sm text-slate-400">Loading filter...</div>}>
           <BlogFilter />
         </Suspense>
       </div>
 
-      <Suspense
-        fallback={
-          <div className="p-8 text-center text-slate-500">
-            Loading blogs...
+      <div data-testid="blogs-list" className="space-y-4">
+        {blogs.length === 0 ? (
+          <div className="p-8 text-center bg-white rounded-xl border border-slate-200 text-slate-500">
+            {search
+              ? `No blogs found matching "${search}".`
+              : "No blogs added yet. Be the first to share one!"}
           </div>
-        }
-      >
-        <BlogsList search={search} />
-      </Suspense>
+        ) : (
+          blogs.map((blog) => (
+            <div
+              key={blog.id}
+              data-testid="blog-item"
+              className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            >
+              <div className="space-y-1">
+                <Link
+                  href={`/blogs/${blog.id}`}
+                  data-testid="blog-title"
+                  className="text-lg font-bold text-blue-600 hover:text-blue-800 hover:underline block"
+                >
+                  {blog.title}
+                </Link>
+                <p className="text-sm text-slate-600">
+                  by{" "}
+                  <span
+                    data-testid="blog-author"
+                    className="font-medium text-slate-800"
+                  >
+                    {blog.author}
+                  </span>
+                </p>
+                {blog.user && (
+                  <p className="text-xs text-slate-400">
+                    Added by {blog.user.name} (@{blog.user.username})
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-4">
+                <span
+                  data-testid="likes-count"
+                  className="text-sm font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full"
+                >
+                  {blog.likes} likes
+                </span>
+                <Link
+                  href={`/blogs/${blog.id}`}
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                >
+                  View details &rarr;
+                </Link>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
